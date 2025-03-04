@@ -20,7 +20,7 @@ public class MonsterColl : MonoBehaviour
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer(layerName))
         {
-            target.SetNormal(new Vector3(-1, -1));
+            target.ResetNormal();
         }
     }
 }

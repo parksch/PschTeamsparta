@@ -13,11 +13,16 @@ public class Monster : MonoBehaviour
     [SerializeField] Rigidbody2D rigid2d;
     [SerializeField] Vector3 normal;
 
-    public Vector3 Normal => normal;
+    Vector3 currentNormal;
 
     public void SetNormal(Vector3 pos)
     {
-        normal = pos;
+        currentNormal = pos;
+    }
+
+    public void ResetNormal()
+    {
+        currentNormal = normal;
     }
 
     public void Set()
@@ -27,7 +32,7 @@ public class Monster : MonoBehaviour
         animator.SetBool("IsDead",false);
         animator.SetBool("IsIdle",false);
         isOn = true;
-        normal = new Vector3(-1, -1);
+        currentNormal = normal;
     }
 
     public void OnAttack()
@@ -45,10 +50,10 @@ public class Monster : MonoBehaviour
             return;
         }
 
-        rigid2d.MovePosition(transform.position + normal * speed * Time.deltaTime);
+        rigid2d.velocity = currentNormal * speed;
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerStay2D(Collider2D collision)
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
