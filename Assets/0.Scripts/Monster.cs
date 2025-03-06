@@ -1,8 +1,10 @@
+using ClientEnum;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
-public class Monster : MonoBehaviour
+public class Monster : MoveObject
 {
     [SerializeField] PlayerSpot target;
     [SerializeField] bool isOn;
@@ -11,28 +13,16 @@ public class Monster : MonoBehaviour
     [SerializeField] float speed;
     [SerializeField] Animator animator;
     [SerializeField] Rigidbody2D rigid2d;
-    [SerializeField] Vector3 normal;
-
-    Vector3 currentNormal;
-
-    public void SetNormal(Vector3 pos)
-    {
-        currentNormal = pos;
-    }
-
-    public void ResetNormal()
-    {
-        currentNormal = normal;
-    }
 
     public void Set()
     {
+        currentCell = null;
+        gameObject.SetActive(true);
         animator.Play("Run");
         animator.SetBool("IsAttacking",false);
         animator.SetBool("IsDead",false);
         animator.SetBool("IsIdle",false);
         isOn = true;
-        currentNormal = normal;
     }
 
     public void OnAttack()
@@ -50,25 +40,19 @@ public class Monster : MonoBehaviour
             return;
         }
 
-        rigid2d.velocity = currentNormal * speed;
-    }
+        GameManager.Instance.CheckMonsterGrid(this);
 
-    private void OnTriggerStay2D(Collider2D collision)
-    {
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
+        rigid2d.velocity = currentNormal * speed;
+
+        if (GameManager.Instance.IsPlayer(this))
         {
-            target = collision.GetComponent<PlayerSpot>();
             animator.SetBool("IsAttacking", true);
         }
-    }
-
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
+        else
         {
-            target = null;
             animator.SetBool("IsAttacking", false);
         }
 
     }
+
 }

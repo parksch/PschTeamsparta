@@ -8,38 +8,18 @@ public class Spawn : MonoBehaviour
     [SerializeField] float spawnTimer;
     [SerializeField] Transform monsterParent;
     [SerializeField] Monster monsterPrefab;
-    Queue<Monster> pools = new Queue<Monster>();
+
     float currentTime = 0;
-
-    public Monster Get()
-    {
-        if (pools.Count == 0)
-        {
-            Monster create = Instantiate(monsterPrefab,monsterParent);
-            create.transform.position = transform.position;
-            create.gameObject.SetActive(false);
-            pools.Enqueue(create);
-        }
-
-        Monster monster = pools.Dequeue();
-        monster.gameObject.SetActive(true);
-        return monster;
-    }
-
-    public void Enqueue(Monster monster)
-    {
-        monster.transform.position = transform.position;
-        monster.gameObject.SetActive(false);
-        pools.Enqueue(monster);
-    }
 
     private void FixedUpdate()
     {
         if (currentTime <= 0)
         {
             currentTime = spawnTimer;
-            Monster monster = Get();
-            monster.Set();
+            GameObject monster = PoolManager.Instance.Dequeue(monsterPrefab.GetComponent<ObjectPool>().ID);
+            monster.transform.parent = monsterParent;
+            monster.transform.position = transform.position;
+            GameManager.Instance.AddMonster(monster);
         }
 
         currentTime -= Time.deltaTime;
