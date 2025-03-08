@@ -5,13 +5,13 @@ using UnityEngine;
 
 public class MoveObject : MonoBehaviour
 {
-    public GameManager.Cell currentCell;
+    public GameManager.Cell currentCell = null;
 
     protected Vector3 currentNormal;
 
     public ClientEnum.MoveType CurrentMove()
     {
-        if (currentNormal == Vector3.up)
+        if (currentNormal == Vector3.up * 2f)
         {
             return MoveType.Up;
         }
@@ -23,7 +23,7 @@ public class MoveObject : MonoBehaviour
         {
             return MoveType.Right;
         }
-        else if (currentNormal == Vector3.down)
+        else if (currentNormal == Vector3.down * 2f)
         {
             return MoveType.Down;
         }
@@ -47,10 +47,10 @@ public class MoveObject : MonoBehaviour
                 currentNormal = Vector3.right;
                 break;
             case ClientEnum.MoveType.Up:
-                currentNormal = Vector3.up;
+                currentNormal = Vector3.up * 2f;
                 break;
             case ClientEnum.MoveType.Down:
-                currentNormal = Vector3.down;
+                currentNormal = Vector3.down * 2f;
                 break;
             default:
                 break;

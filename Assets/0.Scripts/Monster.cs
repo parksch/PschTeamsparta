@@ -2,7 +2,6 @@ using ClientEnum;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 public class Monster : MoveObject
 {
@@ -14,9 +13,10 @@ public class Monster : MoveObject
     [SerializeField] Animator animator;
     [SerializeField] Rigidbody2D rigid2d;
 
-    public void Set()
+    public void Set(GameManager.Cell cell)
     {
-        currentCell = null;
+        currentCell = cell;
+        transform.position = currentCell.pos;
         gameObject.SetActive(true);
         animator.Play("Run");
         animator.SetBool("IsAttacking",false);

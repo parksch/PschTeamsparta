@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using ClientEnum;
-using Unity.VisualScripting;
-using System.Threading;
 
 public class GameManager : MonoBehaviour
 {
@@ -22,7 +20,7 @@ public class GameManager : MonoBehaviour
     public bool IsPlayer(Monster monster)
     {
         Vector2Int grid = GetGrid(monster);
-        return grid.x <= 0;
+        return grid.x <= 0 ;
     }
 
     [System.Serializable]
@@ -64,110 +62,69 @@ public class GameManager : MonoBehaviour
     public void AddMonster(GameObject go)
     {
         Monster monster = go.GetComponent<Monster>();
-        monster.Set();
+        Vector2Int monsterGrid = GetGrid(monster);
+        monster.Set(cells[monsterGrid.y, monsterGrid.x]);
+        cells[monsterGrid.y, monsterGrid.x].game = monster;
     }
 
     public void CheckMonsterGrid(Monster monster)
     {
-        Vector2Int monsterGrid = GetGrid(monster);
+        MoveType moveType = MoveType.Stop;
 
-        if (monster.currentCell == null)
+        if (IsClose(monster, monster.currentCell.grid))
         {
-            if (cells[monsterGrid.y,monsterGrid.x].game == null)
-            {
-                monster.currentCell = cells[monsterGrid.y, monsterGrid.x];
-                cells[monsterGrid.y, monsterGrid.x].game = monster;
-                monster.SetMove(MoveType.Left);
-            }
-        }
-        else
-        {
-            MoveType moveType = MoveType.Stop;
-
-            if (IsClose(monster, monster.currentCell.grid))
+            if (monster.currentCell.game == monster)
             {
                 monster.currentCell.game = null;
-                monster.currentCell = cells[monsterGrid.y, monsterGrid.x];
-                monster.currentCell.game = monster;
+            }
 
-                if (monster.currentCell.grid.y > 0)
-                {
+            switch (monster.CurrentMove())
+            {
+                case MoveType.Left:
                     if (monster.currentCell.grid.x - 1 >= 0)
                     {
-                        if (cells[monster.currentCell.grid.y - 1, monster.currentCell.grid.x - 1].game != null)
-                        {
-                            MoveObject other = cells[monster.currentCell.grid.y - 1, monster.currentCell.grid.x - 1].game;
-                            if (other.CurrentMove() != MoveType.Up)
-                            {
-                                monster.SetMove(MoveType.Left);
-                            }
-                        }
-                        else if (cells[monster.currentCell.grid.y, monster.currentCell.grid.x - 1].game != null)
-                        {
-                            monster.SetMove(MoveType.Stop);
-                        }
-                        else
-                        {
-                            monster.SetMove(MoveType.Down);
-                        }
+                        monster.currentCell = cells[monster.currentCell.grid.y, monster.currentCell.grid.x - 1];
                     }
-                    else
+                    break;
+                case MoveType.Right:
+                    if (monster.currentCell.grid.x + 1 < max.x)
                     {
-                        if (cells[monster.currentCell.grid.y - 1, monster.currentCell.grid.x].game == null)
-                        {
-                            monster.SetMove(MoveType.Down);
-                        }
-                        else
-                        {
-                            monster.SetMove(MoveType.Stop);
-                        }
+                        monster.currentCell = cells[monster.currentCell.grid.y, monster.currentCell.grid.x + 1];
                     }
-                }
-                else
-                {
-                    if (monster.currentCell.grid.x -1 >= 0)
+                    break;
+                case MoveType.Up:
+                    if (monster.currentCell.grid.y + 1 < max.y)
                     {
-                        if (cells[monster.currentCell.grid.y, monster.currentCell.grid.x - 1].game != null)
-                        {
-                            if (cells[monster.currentCell.grid.y + 1, monster.currentCell.grid.x].game == null)
-                            {
-                                monster.SetMove(MoveType.Up);
-                            }
-                            else
-                            {
-                                if (CheckCloseDist(monster.currentCell.pos.x, monster.transform.position.x))
-                                {
-                                    monster.SetMove(MoveType.Stop);
-                                }
-                            }
-                        }
+                        monster.currentCell = cells[monster.currentCell.grid.y + 1, monster.currentCell.grid.x];
                     }
-                    else if (monster.currentCell.grid.x == 0)
+                    break;
+                case MoveType.Down:
+                    if (monster.currentCell.grid.y - 1 >= 0)
                     {
-                        if (cells[monster.currentCell.grid.y + 1, monster.currentCell.grid.x].game != null && cells[monster.currentCell.grid.y + 1, monster.currentCell.grid.x + 1].game == null)
-                        {
-                            monster.SetMove(MoveType.Right);
-                        }
-                        else if (CheckCloseDist(monster.currentCell.pos.x, monster.transform.position.x))
-                        {
-                            monster.SetMove(MoveType.Stop);
-                        }
+                        monster.currentCell = cells[monster.currentCell.grid.y - 1, monster.currentCell.grid.x];
                     }
-                    else
-                    {
-                        monster.SetMove(MoveType.Left);
-                    }
-                }
+                    break;
+                default:
+                    break;
+            }
 
-                if (!CheckAround(monster.currentCell.grid, moveType))
-                {
-                    monster.SetMove(MoveType.Stop);
-                }
-                else
-                {
-                    monster.SetMove(moveType);
-                }
+            if (monster.currentCell.game != null)
+            {
+                monster.currentCell.game.SetMove(MoveType.Right);
+            }
 
+            monster.currentCell.game = monster;
+            monster.transform.position = new Vector3(monster.transform.position.x,monster.currentCell.pos.y,0);
+
+            moveType = GetMoveType(monster.currentCell.grid);
+
+            if (!CheckAround(monster.currentCell.grid, moveType))
+            {
+                monster.SetMove(MoveType.Stop);
+            }
+            else
+            {
+                monster.SetMove(moveType);
             }
         }
     }
@@ -179,9 +136,9 @@ public class GameManager : MonoBehaviour
             case MoveType.Stop:
                 return true;
             case MoveType.Left:
-                if (grid.x - 1 > 0)
+                if (grid.x - 1 >= 0)
                 {
-                    if (Mathf.Abs(Mathf.Abs(cells[grid.y,grid.x - 1].pos.x) - Mathf.Abs(monster.transform.position.x)) < closeDist)
+                    if (CheckCloseDist(cells[grid.y, grid.x - 1].pos.x, monster.transform.position.x))
                     {
                         return true;
                     }
@@ -194,7 +151,7 @@ public class GameManager : MonoBehaviour
             case MoveType.Right:
                 if (grid.x + 1 < max.x)
                 {
-                    if (Mathf.Abs(Mathf.Abs(cells[grid.y, grid.x + 1].pos.x) - Mathf.Abs(monster.transform.position.x)) < closeDist)
+                    if (CheckCloseDist(cells[grid.y, grid.x + 1].pos.x, monster.transform.position.x))
                     {
                         return true;
                     }
@@ -207,7 +164,7 @@ public class GameManager : MonoBehaviour
             case MoveType.Up:
                 if (grid.y + 1 < max.y)
                 {
-                    if (Mathf.Abs(Mathf.Abs(cells[grid.y + 1, grid.x].pos.y) - Mathf.Abs(monster.transform.position.y)) < closeDist)
+                    if (CheckCloseDist(cells[grid.y + 1, grid.x].pos.y, monster.transform.position.y))
                     {
                         return true;
                     }
@@ -218,9 +175,9 @@ public class GameManager : MonoBehaviour
                 }
                 break;
             case MoveType.Down:
-                if (grid.y - 1 > 0)
+                if (grid.y - 1 >= 0)
                 {
-                    if (Mathf.Abs(Mathf.Abs(cells[grid.y - 1, grid.x].pos.y) - Mathf.Abs(monster.transform.position.y)) < closeDist)
+                    if (CheckCloseDist(cells[grid.y - 1, grid.x].pos.y, monster.transform.position.y))
                     {
                         return true;
                     }
@@ -248,66 +205,142 @@ public class GameManager : MonoBehaviour
 
     bool CheckAround(Vector2Int grid,MoveType moveType)
     {
-
         switch (moveType)
         {
             case MoveType.Left:
-                if (grid.x - 1 > 0 && cells[grid.y,grid.x - 1] != null)
+                if (grid.x - 1 >= 0 && cells[grid.y,grid.x - 1].game != null)
                 {
-                    return false;
-                }
-                if (grid.y + 1 < max.y && grid.x - 1 > 0 && cells[grid.y + 1,grid.x - 1].game != null)
-                {
-                    if(cells[grid.y + 1, grid.x - 1].game.CurrentMove() == MoveType.Down)
+                    if (cells[grid.y, grid.x - 1].game.CurrentMove() == MoveType.Stop)
                     {
                         return false;
                     }
                 }
-                if (grid.y - 1 > 0 && grid.x - 1 > 0 && cells[grid.y - 1,grid.x - 1].game != null)
+                if (grid.y + 1 < max.y && grid.x - 1 >= 0 && cells[grid.y + 1,grid.x - 1].game != null)
+                {
+                    if(GetMoveType(cells[grid.y + 1, grid.x - 1].grid) == MoveType.Down)
+                    {
+                        return false;
+                    }
+                }
+                if (grid.y - 1 >= 0 && grid.x - 1 >= 0 && cells[grid.y - 1,grid.x - 1].game != null)
                 {
                     if (cells[grid.y - 1, grid.x - 1].game.CurrentMove() == MoveType.Up)
                     {
                         return false;
                     }
                 }
-                if ( grid.x - 2 > 0 && cells[grid.y, grid.x - 2].game != null)
-                {
+                if ( grid.x - 2 >= 0 && cells[grid.y, grid.x - 2].game != null)
+                { 
                     if (cells[grid.y, grid.x - 2].game.CurrentMove() == MoveType.Right)
+                    {
+                        return false;
+                    }
+                }
+                if (grid.x == 0)
+                {
+                    if (CheckCloseDist(cells[grid.y, grid.x].pos.x, cells[grid.y, grid.x].game.transform.position.x))
                     {
                         return false;
                     }
                 }
                 break;
             case MoveType.Right:
-                if (grid.x + 1 < max.x && cells[grid.y, grid.x + 1] != null)
+                if (grid.y + 1 < max.y && grid.x + 1 < max.x && cells[grid.y + 1, grid.x + 1].game != null)
                 {
-                    return false;
-                }
-                if (grid.y + 1 < max.y && grid.x - 1 > 0 && cells[grid.y + 1, grid.x - 1].game != null)
-                {
-                    if (cells[grid.y + 1, grid.x - 1].game.CurrentMove() == MoveType.Down)
+                    if (GetMoveType(cells[grid.y + 1, grid.x + 1].grid) == MoveType.Down)
                     {
                         return false;
                     }
                 }
-                if (grid.y - 1 > 0 && grid.x - 1 > 0 && cells[grid.y - 1, grid.x - 1].game != null)
+                if (grid.y - 1 >= 0 && grid.x + 1 >= 0 && cells[grid.y - 1, grid.x + 1].game != null)
                 {
-                    if (cells[grid.y - 1, grid.x - 1].game.CurrentMove() == MoveType.Up)
+                    if (cells[grid.y - 1, grid.x + 1].game.CurrentMove() == MoveType.Up)
                     {
                         return false;
                     }
                 }
-                if (grid.x - 2 > 0 && cells[grid.y, grid.x - 2].game != null)
+                if (grid.x + 2 < max.x && cells[grid.y, grid.x + 2].game != null)
                 {
-                    if (cells[grid.y, grid.x - 2].game.CurrentMove() == MoveType.Right)
+                    if (cells[grid.y, grid.x + 2].game.CurrentMove() == MoveType.Left)
+                    {
+                        return false;
+                    }
+                }
+                if (grid.x == max.x - 1)
+                {
+                    if (CheckCloseDist(cells[grid.y, grid.x].pos.x, cells[grid.y, grid.x].game.transform.position.x))
                     {
                         return false;
                     }
                 }
                 break;
             case MoveType.Up:
+                if (grid.y + 1 < max.y && cells[grid.y + 1,grid.x].game != null)
+                {
+                    return false;
+                }
+                if (grid.y + 2 < max.y && cells[grid.y + 2,grid.x].game != null )
+                {
+                    if (GetMoveType(cells[grid.y + 2, grid.x].grid) == MoveType.Down)
+                    {
+                        return false;
+                    }
+                }
+                if (grid.y + 1 < max.y && grid.x - 1 >= 0 && cells[grid.y + 1, grid.x - 1].game != null)
+                {
+                    if (cells[grid.y + 1,grid.x - 1].game.CurrentMove() == MoveType.Right)
+                    {
+                        return false;
+                    }
+                }
+                if (grid.y + 1 < max.y && grid.x + 1 < max.x && cells[grid.y + 1, grid.x + 1].game != null)
+                {
+                    if (GetMoveType(cells[grid.y + 1, grid.x + 1].grid) == MoveType.Left)
+                    {
+                        return false;
+                    }
+                }
+                if (grid.y == max.y - 1)
+                {
+                    if (CheckCloseDist(cells[grid.y, grid.x].pos.y, cells[grid.y, grid.x].game.transform.position.y))
+                    {
+                        return false;
+                    }
+                }
                 break;
             case MoveType.Down:
+                if (grid.y - 1 >= 0 && cells[grid.y - 1, grid.x].game != null)
+                {
+                    return false;
+                }
+                if (grid.y - 2 >= 0 && cells[grid.y - 2, grid.x].game != null)
+                {
+                    if (cells[grid.y - 2, grid.x].game.CurrentMove() == MoveType.Up)
+                    {
+                        return false;
+                    }
+                }
+                if (grid.y - 1 >= 0 && grid.x - 1 >= 0 && cells[grid.y - 1, grid.x - 1].game != null)
+                {
+                    if (cells[grid.y - 1, grid.x - 1].game.CurrentMove() == MoveType.Right)
+                    {
+                        return false;
+                    }
+                }
+                if (grid.y - 1 >= 0 && grid.x + 1 < max.x && cells[grid.y - 1, grid.x + 1].game != null)
+                {
+                    if (cells[grid.y - 1, grid.x + 1].game.CurrentMove() == MoveType.Left)
+                    {
+                        return false;
+                    }
+                }
+                if (grid.y == 0)
+                {
+                    if (CheckCloseDist(cells[grid.y, grid.x].pos.y, cells[grid.y, grid.x].game.transform.position.y))
+                    {
+                        return false;
+                    }
+                }
                 break;
             default:
                 break;
@@ -322,9 +355,93 @@ public class GameManager : MonoBehaviour
         offset.x = offset.x / cellSize;
         offset.y = offset.y / cellSize;
 
+        float xRemain = offset.x - (int)offset.x;
+        float yRemain = offset.y - (int)offset.y;
+
+        offset.x -= (xRemain < closeDist ? 1 : 0);
+        offset.x += (xRemain > 1 - closeDist ? 1 : 0);
+
+        offset.y += (yRemain > 1 - closeDist ? 1 : 0);
+        offset.y -= (yRemain < closeDist ? 1 : 0);
+
+        if (offset.x >= max.x)
+        {
+            offset.x = max.x - 1;
+        }
+        else if (offset.x < 0)
+        {
+            offset.x = 0;
+        }
+        
+        if (offset.y >= max.y)
+        {
+            offset.y = max.y - 1;
+        }
+        else if (offset.y < 0)
+        {
+            offset.y = 0;
+        }
+
         Vector2Int monsterGrid = new Vector2Int((int)offset.x, (int)offset.y);
 
         return monsterGrid;
+    }
+
+    MoveType GetMoveType(Vector2Int grid)
+    {
+        if (grid.y > 0)
+        {
+            if ((grid.x - 1 >= 0 && 
+                (cells[grid.y - 1, grid.x - 1].game != null) || 
+                 cells[grid.y - 1, grid.x].game != null))
+
+            {
+                if (grid.x - 1 >= 0 && cells[grid.y,grid.x - 1].game == null)
+                {
+                    return MoveType.Left;
+                }
+            }
+
+            if (cells[grid.y - 1, grid.x].game == null)
+            {
+                return MoveType.Down;
+            }
+        }
+
+        if (grid.x - 1 >= 0)
+        {
+            if (grid.y + 1 < max.y &&
+                cells[grid.y, grid.x - 1].game != null &&
+                cells[grid.y + 1, grid.x - 1].game == null &&
+                cells[grid.y + 1, grid.x + 1].game == null &&
+                cells[grid.y + 1, grid.x].game == null)
+            {
+                if (cells[grid.y, grid.x - 1].game.CurrentMove() == MoveType.Stop && 
+                   (cells[grid.y, grid.x + 1].game == null ||
+                   (cells[grid.y, grid.x + 1].game != null && GetMoveType(cells[grid.y, grid.x + 1].grid) != MoveType.Up)))
+                {
+                    return MoveType.Up;
+                }
+            }
+
+            if (cells[grid.y, grid.x - 1].game != null && 
+                cells[grid.y, grid.x - 1].game.CurrentMove() == MoveType.Right)
+            {
+                return MoveType.Right;
+            }
+            else
+            {
+                return MoveType.Left;
+            }
+        }
+
+        if (grid.y + 1 < max.y && grid.x + 1 < max.x && cells[grid.y + 1, grid.x].game != null && 
+            cells[grid.y + 1, grid.x + 1].game == null)
+        {
+            return MoveType.Right;
+        }
+
+        return MoveType.Stop;
     }
 
     private void OnDrawGizmosSelected()
