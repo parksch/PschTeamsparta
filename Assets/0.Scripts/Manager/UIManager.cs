@@ -70,12 +70,20 @@ public class UIManager : MonoBehaviour
 
     public void UpdateSpotList()
     {
-        for (int i = 0; DataManager.instance.spotDatas.Count > 0; i++)
+        for (int i = 0; i < DataManager.instance.spotDatas.Count; i++)
         {
-            if (DataManager.instance.spotDatas[i].type != SpotType.Empty)
+            if (i < spotUpgrades.Count)
             {
-
+                if (DataManager.instance.spotDatas[i].type != SpotType.Empty)
+                {
+                    spotUpgrades[i].SetActive(true);
+                }
+                else
+                {
+                    spotUpgrades[i].SetActive(false);
+                }
             }
+            
         }
     }
 }

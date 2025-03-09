@@ -1561,7 +1561,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1087065548}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &544249830
 GameObject:
@@ -3458,6 +3458,7 @@ Transform:
   - {fileID: 1120481852}
   - {fileID: 1721030663}
   - {fileID: 768502712}
+  - {fileID: 519420032}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1087065549
@@ -3473,6 +3474,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   world: {fileID: 768502715}
+  spotUpgrades:
+  - {fileID: 1565374321}
+  - {fileID: 1237327556}
+  - {fileID: 985337734}
+  - {fileID: 2020215761}
+  - {fileID: 273713444}
   boxUpgrade: {fileID: 393543065}
   startButton: {fileID: 953784599}
   powerButton: {fileID: 765264931}
@@ -6861,4 +6868,3 @@ SceneRoots:
   - {fileID: 1524754161756929040}
   - {fileID: 1630849681}
   - {fileID: 1983006309}
-  - {fileID: 519420032}
