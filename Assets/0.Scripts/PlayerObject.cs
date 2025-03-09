@@ -10,6 +10,12 @@ public class PlayerObject : MonoBehaviour
 
     public void Set(string weapon,int damage)
     {
+        if (target != null)
+        {
+            PoolManager.Instance.Enqueue(target.GetComponent<ObjectPool>(),target.gameObject);
+            target = null;
+        }
+
         if (weapon != "")
         {
             target = PoolManager.Instance.Dequeue(weapon).GetComponent<Weapon>();

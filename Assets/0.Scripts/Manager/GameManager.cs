@@ -85,13 +85,27 @@ public class GameManager : MonoBehaviour
         back.SetFloat("Speed", 0f);
         monsterSpawn.Set(false);
 
-        for (int i = 0; i < DataManager.instance.spotDatas.Count; i++)
+        SetSpot();
+        UIManager.instance.SetUI(gameState);
+    }
+
+    public void SetSpot()
+    {
+        int count = 0;
+        for (int i = DataManager.instance.spotDatas.Count - 1; i >=  0; i--)
         {
-            spotList[i].SetSpot(DataManager.instance.spotDatas[i]);
+            if (DataManager.instance.spotDatas[i].type == SpotType.Empty)
+            {
+                continue;
+            }
+            else
+            {
+                spotList[count].SetSpot(DataManager.instance.spotDatas[i]);
+                count++;
+            }
         }
 
         masterSpot = spotList.Find(x => x.SpotType == SpotType.Player);
-        UIManager.instance.SetUI(gameState);
     }
 
     public void ChangeState(GameState game)

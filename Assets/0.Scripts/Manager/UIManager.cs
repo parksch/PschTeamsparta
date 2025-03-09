@@ -65,7 +65,11 @@ public class UIManager : MonoBehaviour
 
     public void OnClickBuyBox(int i)
     {
-
+        DataManager.SpotData spot = DataManager.instance.spotDatas[i];
+        spot.type = SpotType.Box;
+        spot.level += 1;
+        GameManager.Instance.SetSpot();
+        UpdateSpotList();
     }
 
     public void UpdateSpotList()

@@ -31,6 +31,12 @@ public class PlayerSpot : MonoBehaviour
 
     public void SetSpot(DataManager.SpotData spotData)
     {
+        if (playerObject != null)
+        {
+            PoolManager.Instance.Enqueue(playerObject.GetComponent<ObjectPool>(),playerObject.gameObject);
+            playerObject = null;
+        }
+
         spotType = spotData.type;
         hpPanel.SetValue(1f);
 
