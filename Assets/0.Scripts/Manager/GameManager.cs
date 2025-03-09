@@ -5,16 +5,20 @@ using ClientEnum;
 
 public class GameManager : MonoBehaviour
 {
+    [SerializeField] GameState gameState;
     [SerializeField] Cell[,] cells;
     [SerializeField] Vector2Int max;
     [SerializeField] float cellSize;
     [SerializeField] float closeDist;
     [SerializeField] Transform cellStartPos;
     [SerializeField] Spawn monsterSpawn;
+    [SerializeField] List<PlayerSpot> spotList;
     [SerializeField] List<Monster> monsters = new List<Monster>();
     [SerializeField] Animator ground;
     [SerializeField] Animator back;
+    [SerializeField] PlayerSpot masterSpot;
 
+    public GameState GameState => gameState;
     public static GameManager Instance;
 
     public bool IsPlayer(Monster monster)
@@ -52,11 +56,52 @@ public class GameManager : MonoBehaviour
         Init();
     }
 
+    void Update()
+    {
+        if (GameState != GameState.Game)
+        {
+            return;
+        }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            masterSpot.ClickOff();
+        }
+
+        if (Input.GetMouseButton(0))
+        {
+            Vector3 mousePos = Input.mousePosition;
+            mousePos.z -= Camera.main.transform.position.z;
+            Vector3 pos = Camera.main.ScreenToWorldPoint(mousePos);
+            masterSpot.SetRot(pos);
+        }
+    }
+
     public void Init()
     {
-        ground.SetFloat("Speed", 1f);
-        back.SetFloat("Speed", 1f);
-        monsterSpawn.gameObject.SetActive(true);
+        UIManager.instance.Init();
+        gameState = GameState.Buy;
+        ground.SetFloat("Speed", 0f);
+        back.SetFloat("Speed", 0f);
+        monsterSpawn.Set(false);
+
+        for (int i = 0; i < DataManager.instance.spotDatas.Count; i++)
+        {
+            spotList[i].SetSpot(DataManager.instance.spotDatas[i]);
+        }
+
+        masterSpot = spotList.Find(x => x.SpotType == SpotType.Player);
+        UIManager.instance.SetUI(gameState);
+    }
+
+    public void ChangeState(GameState game)
+    {
+        gameState = game;
+        UIManager.instance.SetUI(gameState);
+
+        ground.SetFloat("Speed", gameState == GameState.Game ? 1 : 0);
+        back.SetFloat("Speed", gameState == GameState.Game ? 1 : 0);
+        monsterSpawn.Set(gameState == GameState.Game);
     }
 
     public void AddMonster(GameObject go)
@@ -65,6 +110,32 @@ public class GameManager : MonoBehaviour
         Vector2Int monsterGrid = GetGrid(monster);
         monster.Set(cells[monsterGrid.y, monsterGrid.x]);
         cells[monsterGrid.y, monsterGrid.x].game = monster;
+        monsters.Add(monster);
+    }
+
+    public Monster GetMonster()
+    {
+        if (monsters.Count > 0)
+        {
+            return monsters[0];
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public void UpdateSpot()
+    {
+
+    }
+
+    public void RemoveMonster(Monster target)
+    {
+        Cell cell = target.currentCell;
+        cell.game = null;
+        monsters.Remove(target);
+        PoolManager.Instance.Enqueue(target.GetComponent<ObjectPool>(),target.gameObject);
     }
 
     public void CheckMonsterGrid(Monster monster)

@@ -25,6 +25,11 @@ public class Monster : MoveObject
         isOn = true;
     }
 
+    public void Hit(int damage)
+    {
+        UIManager.instance.SetDamageUI(transform.position + Vector3.up * .5f,damage);
+    }
+
     public void OnAttack()
     {
         if (target != null)

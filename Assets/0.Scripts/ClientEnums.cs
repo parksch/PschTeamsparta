@@ -1,5 +1,11 @@
  namespace ClientEnum
 {
+	public enum ObjectPool
+	{
+		Object,
+		UI
+	}
+
 	public enum GameState
 	{
 		Buy,
@@ -7,9 +13,10 @@
 		End,
 	}
 
-	public enum SpotCode
+	public enum SpotType
 	{
 		Player,
+		Box,
 		Empty,
 	}
 

@@ -9,7 +9,7 @@ public class MoveObject : MonoBehaviour
 
     protected Vector3 currentNormal;
 
-    public ClientEnum.MoveType CurrentMove()
+    public MoveType CurrentMove()
     {
         if (currentNormal == Vector3.up * 2f)
         {
@@ -33,23 +33,23 @@ public class MoveObject : MonoBehaviour
         }
     }
 
-    public void SetMove(ClientEnum.MoveType moveType)
+    public void SetMove(MoveType moveType)
     {
         switch (moveType)
         {
-            case ClientEnum.MoveType.Stop:
+            case MoveType.Stop:
                 currentNormal = Vector3.zero;
                 break;
-            case ClientEnum.MoveType.Left:
+            case MoveType.Left:
                 currentNormal = Vector3.left;
                 break;
-            case ClientEnum.MoveType.Right:
+            case MoveType.Right:
                 currentNormal = Vector3.right;
                 break;
-            case ClientEnum.MoveType.Up:
+            case MoveType.Up:
                 currentNormal = Vector3.up * 2f;
                 break;
-            case ClientEnum.MoveType.Down:
+            case MoveType.Down:
                 currentNormal = Vector3.down * 2f;
                 break;
             default:

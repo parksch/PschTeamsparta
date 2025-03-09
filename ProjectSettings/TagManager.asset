@@ -14,11 +14,11 @@ TagManager:
   - UI
   - MonsterAttack
   - Monster
-  - MonsterBottom
-  - MonsterBack
-  - MonsterTop
-  - Wall
   - Player
+  - PlayerAttack
+  - 
+  - 
+  - 
   - 
   - 
   - 

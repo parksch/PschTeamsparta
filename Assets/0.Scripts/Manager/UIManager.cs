@@ -1,18 +1,81 @@
+using ClientEnum;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    [SerializeField] Canvas world;
+    [SerializeField] List<GameObject> spotUpgrades;
+    [SerializeField] GameObject boxUpgrade;
+    [SerializeField] GameObject startButton;
+    [SerializeField] GameObject powerButton;
+    [SerializeField] Camera gameCamera;
+    [SerializeField] Vector3 uiCameraPos;
+    [SerializeField] Vector3 gameCameraPos;
+
+    public static UIManager instance;
+
+    private void Awake()
     {
-        
+        instance = this;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Init()
     {
-        
+
+    }
+
+    public void SetUI(GameState gameState)
+    {
+        switch (gameState)
+        {
+            case GameState.Buy:
+                gameCamera.transform.position = uiCameraPos;
+                boxUpgrade.SetActive(true);
+                startButton.SetActive(true);
+                powerButton.SetActive(true);
+                break;
+            case GameState.Game:
+                gameCamera.transform.position = gameCameraPos;
+                boxUpgrade.SetActive(false);
+                startButton.SetActive(false);
+                powerButton.SetActive(false);
+                break;
+            case GameState.End:
+                break;
+            default:
+                break;
+        }
+
+        UpdateSpotList();
+    }
+
+    public void OnClickStart()
+    {
+        GameManager.Instance.ChangeState(GameState.Game);
+    }
+    
+    public void SetDamageUI(Vector3 pos,int value)
+    {
+        DamageUI damageUI = PoolManager.Instance.Dequeue("DamageUI").GetComponent<DamageUI>();
+        damageUI.transform.SetParent(world.transform);
+        damageUI.Set(pos,value);
+    }
+
+    public void OnClickBuyBox(int i)
+    {
+
+    }
+
+    public void UpdateSpotList()
+    {
+        for (int i = 0; DataManager.instance.spotDatas.Count > 0; i++)
+        {
+            if (DataManager.instance.spotDatas[i].type != SpotType.Empty)
+            {
+
+            }
+        }
     }
 }

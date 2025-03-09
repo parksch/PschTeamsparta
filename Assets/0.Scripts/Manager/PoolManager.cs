@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PoolManager : MonoBehaviour
 {
+    [SerializeField] Transform canvas;
     [SerializeField] List<ObjectPool> prefabs;
     public static PoolManager Instance;
     
@@ -19,12 +20,24 @@ public class PoolManager : MonoBehaviour
         }
     }
 
-    public void Enqueue(string id,GameObject target)
+    public void Enqueue(ObjectPool objectPool,GameObject target)
     {
         target.SetActive(false);
-        target.transform.parent = transform;
+
+        switch (objectPool.PoolType)
+        {
+            case ClientEnum.ObjectPool.Object:
+                target.transform.parent = transform;
+                break;
+            case ClientEnum.ObjectPool.UI:
+                target.transform.parent = canvas.transform;
+                break;
+            default:
+                break;
+        }
+
         target.transform.localPosition = Vector3.zero;
-        pools[id].Enqueue(target);
+        pools[objectPool.ID].Enqueue(target);
     }
 
     public GameObject Dequeue(string target)
