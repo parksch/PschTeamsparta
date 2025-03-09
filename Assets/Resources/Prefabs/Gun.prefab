@@ -48,7 +48,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   forward: {fileID: 728032144097489438}
-  timer: 2
+  radius: 8
+  timer: 1
   projectile: Projectile
 --- !u!114 &5192518861139433257
 MonoBehaviour:
@@ -63,6 +64,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: Gun
+  pool: 0
 --- !u!1 &5431881713150810779
 GameObject:
   m_ObjectHideFlags: 0
